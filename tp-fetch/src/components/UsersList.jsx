@@ -4,62 +4,55 @@ import Card from 'react-bootstrap/Card';
 import Modal from 'react-bootstrap/Modal';
 
 function UsersList(){
-    const url = 'https://randomuser.me/api/?results=5'
+    const url = 'https://randomuser.me/api/?results=12';
     const [users, setUsers] = useState([]);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
         fetch(url)
             .then(res => res.json())
             .then(data => setUsers(data.results))
-        .catch(e => console.log(e))
-    }, [])
+            .catch(e => console.log(e));
+    }, []);
 
-    const [show, setShow] = useState(false);
+    const handleCloseModal = () => setShowModal(false);
+    const handleShowModal = (user) => {
+        setSelectedUser(user);
+        setShowModal(true);
+    };
 
-    const handleClose = () => setShow(false);
-    const handleShow = () => setShow(true);
-  
-
-    return(
+    return (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'center', marginTop: '80px' }}>
-           {
-             users.map( user =>
-                <Card style={{ width: '18rem' }}>
-                <Card.Img variant="top" src={user.picture.large} />
+            {users.map(user =>
+                <Card key={user.login.uuid} style={{ width: '18rem' }}>
+                    <Card.Img variant="top" src={user.picture.large} />
                     <Card.Body>
-                        <Card.Title>
-                        {
-                            user.name.first + " " + user.name.last    
-                        }
-                        </Card.Title>
-                        <Button variant="primary" onClick={handleShow}>Mas info</Button>
+                        <Card.Title>{user.name.first} {user.name.last}</Card.Title>
+                        <Button variant="primary" onClick={() => handleShowModal(user)}>More info</Button>
                     </Card.Body>
                 </Card>
-             )     
-           }
-           <div>
-                {
-                    users.map( user =>
-                        <Modal show={show} onHide={handleClose}>
+            )}
+            <Modal show={showModal} onHide={handleCloseModal}>
+                {selectedUser && (
+                    <>
                         <Modal.Header closeButton>
-                            <Modal.Title>{user.name.first} {user.name.last}</Modal.Title>
+                            <Modal.Title>{selectedUser.name.first} {selectedUser.name.last}</Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
-                            {user.country}
-                            {user.state}
-                            {user.city}
-                            {user.gender}
+                            <p>Country: {selectedUser.location.country}</p>
+                            <p>State: {selectedUser.location.state}</p>
+                            <p>City: {selectedUser.location.city}</p>
+                            <p>Gender: {selectedUser.gender}</p>
                         </Modal.Body>
                         <Modal.Footer>
-                            <Button variant="primary" onClick={handleClose}>Close</Button>
+                            <Button variant="primary" onClick={handleCloseModal}>Close</Button>
                         </Modal.Footer>
-                    </Modal>
-                    )
-                }
-                
-           </div>
-        </div>        
-    )
+                    </>
+                )}
+            </Modal>
+        </div>
+    );
 }
 
 export default UsersList;
